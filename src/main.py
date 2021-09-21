@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Favorite, Planet, Character, Ship
 #from models import Person
 
 app = Flask(__name__)
@@ -30,14 +30,58 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+# GET users
+@app.route('/api/users', methods=['GET'])
+def get_users():
 
-    return jsonify(response_body), 200
+    users = User.query.all()
+    users = list(map(lambda user: user.serialize(), users))
+
+    return jsonify(users), 200
+
+# GET user favorites
+"""
+@app.route('/api/users/favorites/', methods=['GET'])
+def get_user_favorites():
+    user_favorites = User.query.get(user.id)
+    user_favorites = list(map(lambda user_favorite: user_favorite.serialize_with_favorites(), user_favorites))
+
+    return jsonify(favorites), 200
+"""
+
+# GET people/characters
+@app.route('/api/characters', methods=['GET'])
+def get_characters():
+
+    characters = Character.query.all()
+    characters = list(map(lambda character: character.serialize(), characters))
+
+    return jsonify(characters), 200
+
+# GET a single character
+@app.route('/api/characters/<int:character_id>', methods=['GET'])
+def get_character(character_id):
+    character = Character.query.filter_by(character_id=Characters.id).first()
+    return jsonify(character), 200
+
+# GET planets
+@app.route('/api/planets', methods=['GET'])
+def get_planets():
+
+    planets = Planet.query.all()
+    planets = list(map(lambda planet: planet.serialize(), planets))
+
+    return jsonify(planets), 200
+
+# GET a single planet
+@app.route('/api/planets/<int:planet_id>', methods=['GET'])
+def get_planet(planet_id):
+    planet = Planet.query.filter_by(planet_id=Planets.id).first()
+    return jsonify(planet), 200
+
+#
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
