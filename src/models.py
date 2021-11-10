@@ -25,7 +25,6 @@ class User(db.Model):
     
     def serialize_with_favorites(self):
         return {
-            "user_id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
@@ -46,7 +45,7 @@ class User(db.Model):
 
 class Favorite(db.Model):
     __tablename__ = 'favorites'
-    favorite_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     id_user = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
     planets = db.Column(db.Integer, db.ForeignKey('planets.planet_id'))
     characters = db.Column(db.Integer, db.ForeignKey('characters.character_id'))
@@ -54,8 +53,6 @@ class Favorite(db.Model):
 
     def serialize(self):
         return {
-            "favorite_id": self.favorite_id,
-            "user": self.id_user,
             "planets": self.planets,
             "characters": self.characters,
             "starships": self.starships

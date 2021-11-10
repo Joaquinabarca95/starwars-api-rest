@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 134f040dfcb7
+Revision ID: 924b0b498a14
 Revises: 
-Create Date: 2021-09-22 16:04:17.882515
+Create Date: 2021-11-10 20:28:09.891753
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '134f040dfcb7'
+revision = '924b0b498a14'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -62,14 +62,14 @@ def upgrade():
     sa.Column('eye_color', sa.String(length=50), nullable=True),
     sa.Column('birth_year', sa.String(length=50), nullable=True),
     sa.Column('gender', sa.String(length=15), nullable=True),
-    sa.Column('starship', sa.Integer(), nullable=False),
-    sa.Column('homeworld', sa.Integer(), nullable=False),
+    sa.Column('starship', sa.Integer(), nullable=True),
+    sa.Column('homeworld', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['homeworld'], ['planets.planet_id'], ),
     sa.ForeignKeyConstraint(['starship'], ['starships.starship_id'], ),
     sa.PrimaryKeyConstraint('character_id')
     )
     op.create_table('favorites',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('favorite_id', sa.Integer(), nullable=False),
     sa.Column('id_user', sa.Integer(), nullable=True),
     sa.Column('planets', sa.Integer(), nullable=True),
     sa.Column('characters', sa.Integer(), nullable=True),
@@ -78,7 +78,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['id_user'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['planets'], ['planets.planet_id'], ),
     sa.ForeignKeyConstraint(['starships'], ['starships.starship_id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('favorite_id')
     )
     # ### end Alembic commands ###
 

@@ -50,7 +50,7 @@ def get_user(id):
         return jsonify(user), 200
 
 # GET user favorites
-@app.route('/api/users/<int:id>/favorites/<int:favorite_id>', methods=['GET'])
+@app.route('/api/users/<int:id>/favorites', methods=['GET'])
 def get_user_favorites(id):
     user_favorites = User.query.get(id)
     if not user_favorites: return jsonify({"error":"user not found"}), 404
@@ -170,6 +170,28 @@ def add_new_character():
     newCharacter.save()
 
     return jsonify(newCharacter.serialize()), 201
+
+#POST a character to favorites 
+@app.route('/api/users/<int:id>/favorites/characters/<int:character_id>', methods=['POST'])
+def add_favorite_character(id, character_id):
+    return "A POST HAS BEEN RECIEVED"
+
+#DELETE a favorite character
+@app.route('/api/users/<int:id>/favorites/characters/<int:character_id>', methods=['DELETE'])
+def delete_favorite_character(id, character_id):
+    return "A DELETE HAS BEEN RECIEVED"
+
+#POST a planet to favorites 
+@app.route('/api/users/<int:id>/favorites/planets/<int:planet_id>', methods=['POST'])
+def add_favorite_planet(id, planet_id):
+    return "A POST HAS BEEN RECIEVED"
+
+#DELETE a favorite planet
+@app.route('/api/users/<int:id>/favorites/planets/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(id, planet_id):
+    return "A DELETE HAS BEEN RECIEVED"
+
+
 
 # DELETE a user
 @app.route('/api/users/<int:id>', methods=['DELETE'])
