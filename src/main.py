@@ -52,10 +52,10 @@ def get_user(id):
 # GET user favorites
 @app.route('/api/users/<int:id>/favorites', methods=['GET'])
 def get_user_favorites(id):
-    user_favorites = User.query.get(id)
+    user_favorites = Favorite.query.filter(Favorite.id_user == id).all()
     if not user_favorites: return jsonify({"error":"user not found"}), 404
     if user_favorites:
-        user_favorites = user_favorites.serialize_with_favorites()
+        user_favorites = list(map(lambda user_favorite: user_favorite.serialize(), user_favorites))
         return jsonify(user_favorites), 200
 
 #GET favorites
