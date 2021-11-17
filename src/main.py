@@ -58,6 +58,14 @@ def get_user_favorites(id):
         user_favorites = user_favorites.serialize_with_favorites()
         return jsonify(user_favorites), 200
 
+#GET favorites
+@app.route('/api/favorites', methods=['GET'])
+def get_favorites():
+    favorites = Favorite.query.all()
+    favorites = list(map(lambda favorite: favorite.serialize(), favorites))
+
+    return jsonify(favorites), 200
+
 
 # GET people/characters
 @app.route('/api/characters', methods=['GET'])
