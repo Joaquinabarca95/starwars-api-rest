@@ -2,6 +2,21 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
+user_character_fav = db.Table('user_character_fav',
+    db.Column('id_user', db.Integer, db.ForeignKey('users.id'),primary_key=True),
+    db.Column('id_character', db.Integer, db.ForeignKey('characters.id'),primary_key=True)
+)
+user_planet_fav = db.Table('user_planet_fav',
+    db.Column('id_user', db.Integer, db.ForeignKey('users.id'),primary_key=True),
+    db.Column('id_character', db.Integer, db.ForeignKey('planets.id'),primary_key=True)
+)
+user_starship_fav = db.Table('user_starship_fav',
+    db.Column('id_user', db.Integer, db.ForeignKey('users.id'),primary_key=True),
+    db.Column('id_starship', db.Integer, db.ForeignKey('starships.id'),primary_key=True)
+)
+
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -9,23 +24,27 @@ class User(db.Model):
     last_name = db.Column(db.String(80), default="")
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=True)
+    favorites_character= db.relationship('Character', secondary=user_character_fav)
+    favorites_planet= db.relationship('Planet', secondary=user_planet_fav)
+    favorites_starship= db.relationship('Starship', secondary=user_starship_fav)
     
     def serialize(self):
         return {
             "user_id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "email": self.email,
-            # do not serialize the password, its a security breach
+            "email": self.email
         }
     
     def serialize_with_favorites(self):
-        return {
+        return {            
+            "user_id":self.id,
             "first_name": self.first_name,
-            "last_name": self.last_name,
-            "email": self.email,
-            "favorites": self.favorites.serialize()
+            "favorites":{
+                "favorite_planets": list(map(lambda planet: planet.serialize(), self.favorites_planet)),
+                "favorites_character": list(map(lambda character: character.serialize(), self.favorites_character)),
+                "favorite_starship": list(map(lambda starship: starship.serialize(), self.favorites_starship))
+            }
         }
 
     def save(self):
@@ -38,40 +57,6 @@ class User(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-
-
-class Favorite(db.Model):
-    __tablename__ = 'favorites'
-    id = db.Column(db.Integer, primary_key=True)
-    id_user = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
-    users = db.relationship("User")
-    planets_id = db.Column(db.Integer, db.ForeignKey('planets.id'))
-    planets = db.relationship("Planet") 
-    characters_id = db.Column(db.Integer, db.ForeignKey('characters.id'))
-    characters = db.relationship("Character")
-    starships_id = db.Column(db.Integer, db.ForeignKey('starships.id'))  
-    starships = db.relationship("Starship")
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "user": self.id_user,
-            "planets": self.planets_id,
-            "characters": self.characters_id,
-            "starships": self.starships_id
-        }
-    
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def update(self):
-        db.session.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    
 
 
 class Character(db.Model):
@@ -113,7 +98,6 @@ class Character(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-
 
 class Planet(db.Model):
     __tablename__ = 'planets'

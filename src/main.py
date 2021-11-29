@@ -7,8 +7,8 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
-from admin import setup_admin
-from models import db, User, Favorite, Planet, Character, Starship
+from admin import setup_admin 
+from models import *
 import json
 
 app = Flask(__name__)
@@ -32,7 +32,7 @@ def sitemap():
 
 
 # GET users
-@app.route('/api/users', methods=['GET'])
+@app.route('/users', methods=['GET'])
 def get_users():
 
     users = User.query.all()
@@ -41,7 +41,7 @@ def get_users():
     return jsonify(users), 200
 
 # GET a single user
-@app.route('/api/users/<int:id>', methods=['GET'])
+@app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
     user = User.query.get(id)
     if not user: return jsonify({"error":"user not found"}), 404
@@ -49,26 +49,9 @@ def get_user(id):
         user = user.serialize()
         return jsonify(user), 200
 
-# GET user favorites
-@app.route('/api/users/<int:id>/favorites', methods=['GET'])
-def get_user_favorites(id):
-    user_favorites = Favorite.query.filter(Favorite.id_user == id).all()
-    if not user_favorites: return jsonify({"error":"user not found"}), 404
-    if user_favorites:
-        user_favorites = list(map(lambda user_favorite: user_favorite.serialize(), user_favorites))
-        return jsonify(user_favorites), 200
-
-#GET favorites
-@app.route('/api/favorites', methods=['GET'])
-def get_favorites():
-    favorites = Favorite.query.all()
-    favorites = list(map(lambda favorite: favorite.serialize(), favorites))
-
-    return jsonify(favorites), 200
-
 
 # GET people/characters
-@app.route('/api/characters', methods=['GET'])
+@app.route('/characters', methods=['GET'])
 def get_characters():
 
     characters = Character.query.all()
@@ -77,7 +60,7 @@ def get_characters():
     return jsonify(characters), 200
 
 # GET a single character
-@app.route('/api/characters/<int:character_id>', methods=['GET'])
+@app.route('/characters/<int:character_id>', methods=['GET'])
 def get_character(character_id):
     character = Character.query.get(character_id)
     if not character: return jsonify({"error":"character not found"}), 404
@@ -86,7 +69,7 @@ def get_character(character_id):
         return jsonify(character), 200
 
 # GET planets
-@app.route('/api/planets', methods=['GET'])
+@app.route('/planets', methods=['GET'])
 def get_planets():
 
     planets = Planet.query.all()
@@ -95,7 +78,7 @@ def get_planets():
     return jsonify(planets), 200
 
 # GET a single planet
-@app.route('/api/planets/<int:planet_id>', methods=['GET'])
+@app.route('/planets/<int:planet_id>', methods=['GET'])
 def get_planet(planet_id):
     planet = Planet.query.get(planet_id)
     if not planet: return jsonify({"error": "planet not found"}), 404
@@ -104,7 +87,7 @@ def get_planet(planet_id):
         return jsonify(planet), 200
 
 #POST a new user
-@app.route('/api/users', methods=['POST'])
+@app.route('/users', methods=['POST'])
 def add_new_user():
     first_name = request.json.get('first_name')
     last_name = request.json.get('last_name')
@@ -124,7 +107,7 @@ def add_new_user():
     return jsonify(newUser.serialize()), 201
 
 # POST a new planet
-@app.route('/api/planets', methods=['POST'])
+@app.route('/planets', methods=['POST'])
 def add_new_planet():
     name = request.json.get('name')
     rotation_period = request.json.get('rotation_period')
@@ -153,7 +136,7 @@ def add_new_planet():
     return jsonify(newPlanet.serialize()), 201
 
 #POST a new character
-@app.route('/api/characters', methods=['POST'])
+@app.route('/characters', methods=['POST'])
 def add_new_character():
     name = request.json.get('name')
     height = request.json.get('height')
@@ -179,30 +162,77 @@ def add_new_character():
 
     return jsonify(newCharacter.serialize()), 201
 
-#POST a character to favorites 
-@app.route('/api/users/<int:id>/favorites/characters/<int:character_id>', methods=['POST'])
-def add_favorite_character(id, character_id):
-    return "A POST HAS BEEN RECIEVED"
+#GET ALL FAVORITES FROM A SPECIFIC USER
+@app.route('/users/<int:id>/favorites')
+def get_favorites_user(id):
+    user=User.query.get(id)
+    return jsonify(user.serialize_with_favorites()),200
+
+#POST a character to favorites
+@app.route('/users/<int:id>/favorites/characters/<int:character_id>', methods=['POST'])
+def add_new_favorite_character(id, character_id):
+    user= User.query.get(id)
+
+    character=Character.query.get(character_id)
+    user.favorites_character.append(character)
+    user.save()
+    return "FUNCIONA WACHOO"
 
 #DELETE a favorite character
-@app.route('/api/users/<int:id>/favorites/characters/<int:character_id>', methods=['DELETE'])
+@app.route('/users/<int:id>/favorites/characters/<int:character_id>', methods=['DELETE'])
 def delete_favorite_character(id, character_id):
-    return "A DELETE HAS BEEN RECIEVED"
+    user= User.query.get(id)
+    character=Character.query.get(character_id)
+    user.favorites_character.remove(character)
+    user.save()
+    return "SE BORRA:(((("
 
 #POST a planet to favorites 
-@app.route('/api/users/<int:id>/favorites/planets/<int:planet_id>', methods=['POST'])
+@app.route('/users/<int:id>/favorites/planets/<int:planet_id>', methods=['POST'])
 def add_favorite_planet(id, planet_id):
-    return "A POST HAS BEEN RECIEVED"
+    user= User.query.get(id)
+
+    planet=Planet.query.get(planet_id)
+    user.favorites_planet.append(planet)
+    user.save()
+    return "FUNCIONA WACHOO"
+    
 
 #DELETE a favorite planet
-@app.route('/api/users/<int:id>/favorites/planets/<int:planet_id>', methods=['DELETE'])
+@app.route('/users/<int:id>/favorites/planets/<int:planet_id>', methods=['DELETE'])
 def delete_favorite_planet(id, planet_id):
-    return "A DELETE HAS BEEN RECIEVED"
+    user= User.query.get(id)
 
+    planet=Planet.query.get(planet_id)
+    user.favorites_planet.remove(planet)
+    user.save()
+    return "SE BORRA:("
+
+
+#POST a starship to favorites 
+@app.route('/users/<int:id>/favorites/starships/<int:starship_id>', methods=['POST'])
+def add_favorite_starship(id, starship_id):
+    user= User.query.get(id)
+
+    starship=Starship.query.get(starship_id)
+    user.favorites_starship.append(starship)
+    user.save()
+    return "FUNCIONA WACHOOO"
+    
+
+#DELETE a favorite starship
+@app.route('/users/<int:id>/favorites/starships/<int:starship_id>', methods=['DELETE'])
+def delete_favorite_starship(id, starship_id):
+    user= User.query.get(id)
+
+    starship=Starship.query.get(starship_id)
+    user.favorites_starship.remove(starship)
+    user.save()
+    return "SE BORRA:("
 
 
 # DELETE a user
-@app.route('/api/users/<int:id>', methods=['DELETE'])
+@app.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
     user = User.query.get(id)
     if not user: return jsonify({"status": False, "msg":"User doesn't exist"}), 404
@@ -210,7 +240,7 @@ def delete_user(id):
     return jsonify({"status": True, "msg":"User deleted"}), 200
 
 # DELETE a planet
-@app.route('/api/planets/<int:planet_id>', methods=['DELETE'])
+@app.route('/planets/<int:planet_id>', methods=['DELETE'])
 def delete_planet(planet_id):
     planet = Planet.query.get(planet_id)
     if not planet: return jsonify({"status": False, "msg":"Planet doesn't exist"}), 404
@@ -218,7 +248,7 @@ def delete_planet(planet_id):
     return jsonify({"status": True, "msg":"Planet deleted"})
 
 # DELETE a character
-@app.route('/api/characters/<int:character_id>', methods=['DELETE'])
+@app.route('/characters/<int:character_id>', methods=['DELETE'])
 def delete_character(character_id):
     character = Character.query.get(character_id)
     if not character: return jsonify({"status": False, "msg":"Planet doesn't exist"}), 404
